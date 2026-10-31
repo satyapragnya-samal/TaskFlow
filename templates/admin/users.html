@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}System Administration — TaskFlow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-danger"></i>System Administration</h2>
+        <p class="text-muted mb-0">Global user accounts and platform management</p>
+    </div>
+</div>
+
+<!-- Platform Aggregation Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <span class="text-muted small fw-semibold text-uppercase">Platform Users</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_users }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <span class="text-muted small fw-semibold text-uppercase">Total Projects</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_projects }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <span class="text-muted small fw-semibold text-uppercase">Total Tasks</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_tasks }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <span class="text-muted small fw-semibold text-uppercase">Total Comments</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_comments }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registered Users Management Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0">Registered User Accounts ({{ users | length }})</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Account Status</th>
+                        <th>Joined</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="ps-3">
+                            <div class="fw-semibold">{{ u.full_name }}</div>
+                            <small class="text-muted">@{{ u.username }}</small>
+                        </td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            <span class="badge {% if u.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %} text-uppercase">
+                                {{ u.role }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if u.is_active_account %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Deactivated</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ u.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="text-end pe-3">
+                            {% if u.id != current_user.id %}
+                            <div class="d-inline-flex gap-2">
+                                <!-- Toggle Admin Role Form -->
+                                <form method="POST" action="{{ url_for('admin.toggle_role', user_id=u.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-warning btn-sm" title="Change Role">
+                                        {{ 'Demote' if u.role == 'admin' else 'Make Admin' }}
+                                    </button>
+                                </form>
+
+                                <!-- Toggle Active Status Form -->
+                                <form method="POST" action="{{ url_for('admin.toggle_status', user_id=u.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-{{ 'danger' if u.is_active_account else 'success' }} btn-sm">
+                                        {{ 'Deactivate' if u.is_active_account else 'Activate' }}
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small fst-italic">Current Session</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

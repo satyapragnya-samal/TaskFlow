@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Tasks — {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.index') }}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.detail', project_id=project.id) }}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Task List</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">Project Tasks</h2>
+    </div>
+    <div class="d-flex gap-2 mt-2 mt-md-0">
+        <a href="{{ url_for('tasks.kanban', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-kanban me-1"></i> Kanban Board
+        </a>
+        <a href="{{ url_for('tasks.create', project_id=project.id) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> New Task
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('tasks.list_tasks', project_id=project.id) }}" class="row g-2 align-items-center">
+            <!-- Keyword search -->
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search tasks..." value="{{ search_query }}">
+                </div>
+            </div>
+
+            <!-- Status filter -->
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="todo" {% if status_filter == 'todo' %}selected{% endif %}>To Do</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="in_review" {% if status_filter == 'in_review' %}selected{% endif %}>In Review</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+
+            <!-- Priority filter -->
+            <div class="col-md-2">
+                <select name="priority" class="form-select">
+                    <option value="">All Priorities</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                    <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                </select>
+            </div>
+
+            <!-- Assignee filter -->
+            <div class="col-md-2">
+                <select name="assignee" class="form-select">
+                    <option value="">All Assignees</option>
+                    {% for m in project.members %}
+                        <option value="{{ m.user.id }}" {% if assignee_filter == m.user.id %}selected{% endif %}>{{ m.user.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Sort option -->
+            <div class="col-md-2">
+                <select name="sort" class="form-select">
+                    <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>Due Date</option>
+                    <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Recently Created</option>
+                    <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-primary w-100" title="Apply Filters"><i class="bi bi-funnel"></i></button>
+                <a href="{{ url_for('tasks.list_tasks', project_id=project.id) }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Ledger Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if tasks %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Title</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assignee</th>
+                        <th>Due Date</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tasks %}
+                    <tr>
+                        <td class="ps-3">
+                            <a href="{{ url_for('tasks.detail', task_id=t.id) }}" class="fw-semibold text-decoration-none text-dark">
+                                {{ t.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge {% if t.status == 'completed' %}bg-success{% elif t.status == 'in_progress' %}bg-primary{% elif t.status == 'in_review' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ t.status | replace('_', ' ') | title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if t.priority == 'urgent' %}bg-danger{% elif t.priority == 'high' %}bg-warning text-dark{% elif t.priority == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %} text-uppercase">
+                                {{ t.priority }}
+                            </span>
+                        </td>
+                        <td class="small">{{ t.assignee.full_name if t.assignee else 'Unassigned' }}</td>
+                        <td class="small text-muted">{{ t.due_date.strftime('%b %d, %Y') if t.due_date else '--' }}</td>
+                        <td class="text-end pe-3">
+                            <a href="{{ url_for('tasks.detail', task_id=t.id) }}" class="btn btn-outline-secondary btn-sm py-0">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-filter-circle display-4 text-muted"></i>
+            <h5 class="mt-3 fw-bold">No Matching Tasks</h5>
+            <p class="text-muted">No tasks matched your current search filters.</p>
+            <a href="{{ url_for('tasks.list_tasks', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
