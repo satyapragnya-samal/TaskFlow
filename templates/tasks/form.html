@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-header bg-white py-3 border-0">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{{ url_for('projects.detail', project_id=project.id) }}" class="text-decoration-none">{{ project.title }}</a></li>
+                        <li class="breadcrumb-item active">{{ title }}</li>
+                    </ol>
+                </nav>
+                <h4 class="card-title fw-bold mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label fw-semibold") }}
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Design database schema") }}
+                        {% for error in form.title.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-semibold") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4, placeholder="Details, requirements...") }}
+                        {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.priority.label(class="form-label fw-semibold") }}
+                            {{ form.priority(class="form-select") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.status.label(class="form-label fw-semibold") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.assignee_id.label(class="form-label fw-semibold") }}
+                            {{ form.assignee_id(class="form-select") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.due_date.label(class="form-label fw-semibold") }}
+                            {{ form.due_date(class="form-control", type="date") }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

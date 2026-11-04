@@ -60,4 +60,5 @@ if __name__ == '__main__':
         db.create_all()
         print("Database tables verified and initialized successfully in MySQL.")
 
-    app.run(debug=True, port=5000)
+    # use_reloader=False stops the silent Python 3.13 crash on Windows
+    app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False)

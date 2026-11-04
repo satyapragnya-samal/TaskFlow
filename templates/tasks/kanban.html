@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Kanban Board — {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.index') }}" class="text-decoration-none">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.detail', project_id=project.id) }}" class="text-decoration-none">{{ project.title }}</a></li>
+                <li class="breadcrumb-item active">Kanban Board</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0"><i class="bi bi-kanban me-2"></i>{{ project.title }} Board</h2>
+    </div>
+    <div class="d-flex gap-2 mt-2 mt-md-0">
+        <a href="{{ url_for('tasks.create', project_id=project.id) }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add Task
+        </a>
+        <a href="{{ url_for('tasks.list_tasks', project_id=project.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-list-check me-1"></i> Task List
+        </a>
+        <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Overview
+        </a>
+    </div>
+</div>
+
+<!-- 4 Column Drag and Drop Kanban Board -->
+<div class="kanban-board">
+    {% set col_config = [
+        ('todo', 'To Do', 'secondary'),
+        ('in_progress', 'In Progress', 'primary'),
+        ('in_review', 'In Review', 'warning'),
+        ('completed', 'Completed', 'success')
+    ] %}
+
+    {% for col_id, col_name, badge_color in col_config %}
+    <div class="kanban-column shadow-sm">
+        <div class="kanban-header">
+            <span>{{ col_name }}</span>
+            <span class="badge bg-{{ badge_color }}" id="count-{{ col_id }}">{{ columns[col_id] | length }}</span>
+        </div>
+        <div class="kanban-cards" data-status="{{ col_id }}">
+            {% for task in columns[col_id] %}
+            <div class="kanban-card border-priority-{{ task.priority }}" draggable="true" data-task-id="{{ task.id }}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge {% if task.priority == 'urgent' %}bg-danger{% elif task.priority == 'high' %}bg-warning text-dark{% elif task.priority == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %} text-uppercase" style="font-size: 0.65rem;">
+                        {{ task.priority }}
+                    </span>
+                    <a href="{{ url_for('tasks.detail', task_id=task.id) }}" class="text-muted text-decoration-none small">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                </div>
+                <h6 class="fw-semibold mb-2">
+                    <a href="{{ url_for('tasks.detail', task_id=task.id) }}" class="text-dark text-decoration-none">
+                        {{ task.title }}
+                    </a>
+                </h6>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-muted">
+                    <span>
+                        <i class="bi bi-person me-1"></i>
+                        {{ task.assignee.full_name if task.assignee else 'Unassigned' }}
+                    </span>
+                    <span>
+                        <i class="bi bi-clock me-1"></i>
+                        {{ task.due_date.strftime('%b %d') if task.due_date else '--' }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/kanban.js') }}"></script>
+{% endblock %}

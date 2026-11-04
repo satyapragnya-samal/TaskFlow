@@ -6,8 +6,8 @@
     <div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{{ url_for('projects.index') }}">Projects</a></li>
-                <li class="breadcrumb-item"><a href="{{ url_for('projects.detail', project_id=project.id) }}">{{ project.title }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.index') }}" class="text-decoration-none">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.detail', project_id=project.id) }}" class="text-decoration-none">{{ project.title }}</a></li>
                 <li class="breadcrumb-item active">Task List</li>
             </ol>
         </nav>
@@ -62,7 +62,9 @@
                 <select name="assignee" class="form-select">
                     <option value="">All Assignees</option>
                     {% for m in project.members %}
+                        {% if m.user %}
                         <option value="{{ m.user.id }}" {% if assignee_filter == m.user.id %}selected{% endif %}>{{ m.user.full_name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
             </div>
@@ -84,7 +86,7 @@
     </div>
 </div>
 
-<!-- Results Ledger Table -->
+<!-- Task Table -->
 <div class="card shadow-sm border-0">
     <div class="card-body p-0">
         {% if tasks %}
@@ -130,10 +132,10 @@
         </div>
         {% else %}
         <div class="text-center py-5">
-            <i class="bi bi-filter-circle display-4 text-muted"></i>
-            <h5 class="mt-3 fw-bold">No Matching Tasks</h5>
-            <p class="text-muted">No tasks matched your current search filters.</p>
-            <a href="{{ url_for('tasks.list_tasks', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+            <i class="bi bi-card-checklist display-4 text-muted"></i>
+            <h5 class="mt-3 fw-bold">No Tasks Found</h5>
+            <p class="text-muted">No tasks currently match this criteria.</p>
+            <a href="{{ url_for('tasks.create', project_id=project.id) }}" class="btn btn-primary btn-sm">Add First Task</a>
         </div>
         {% endif %}
     </div>

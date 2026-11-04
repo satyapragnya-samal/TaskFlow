@@ -23,7 +23,7 @@ class TaskForm(FlaskForm):
         ('in_review', 'In Review'),
         ('completed', 'Completed')
     ], default='todo', validators=[DataRequired()])
-    assignee_id = SelectField('Assignee', coerce=int, validators=[Optional()])
+    assignee_id = SelectField('Assignee', coerce=int, default=0, validators=[Optional()])
     due_date = DateField('Due Date', validators=[Optional()])
     submit = SubmitField('Save Task')
 
